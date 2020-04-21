@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>拖动</title>
+    <style>
+      .square,
+      .circle {
+        width: 100px;
+        height: 100px;
+        background-color: black;
+        border: 2px solid #fff;
+        text-align: center;
+        line-height: 100px;
+        position: fixed;
+        user-select: none;
+        color: #fff;
+      }
+      .square {
+        border-radius: 6px;
+        top: 3px;
+        left: 3px;
+      }
+      .circle {
+        border-radius: 50%;
+        top: 3px;
+        right: 3px;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="pc_drag" class="square">pc拖动</div>
+    <div id="mobile_drag" class="circle">mobile拖动</div>
+    <script>
+      // pc
+      var pcDrag = document.getElementById("pc_drag");
+      var eX = 0;
+      var eY = 0;
+      var eLeft = 0;
+      var eTop = 0;
+      var isDown = false;
+      pcDrag.onmousedown = function (event) {
+        eX = event.clientX;
+        eY = event.clientY;
+        eLeft = event.target.offsetLeft;
+        eTop = event.target.offsetTop;
+        isDown = true;
+        event.target.style.cursor = "move";
+      };
+      //鼠标移动
+      pcDrag.onmousemove = function (event) {
+        if (isDown == false) {
+          return;
+        }
+        pcDragMove(event, event.target);
+      };
+      window.onmouseup = function (event) {
+        if (isDown) {
+          isDown = false;
+          pcDrag.style.cursor = "default";
+          pcDragMove(event, pcDrag);
+        }
+      };
+
+      function pcDragMove(event, element) {
+        var newX = event.clientX;
+        var newY = event.clientY;
+        var newLeft = newX - (eX - eLeft);
+        var newTop = newY - (eY - eTop);
+        changePostion(element, newLeft, newTop);
+      }
+
+      //mobile
+      const mobileDrag = document.getElementById("mobile_drag");
+      registerTouchDrag(mobileDrag);
+
+      function registerTouchDrag(element) {
+        let touchX = 0,
+          touchY = 0,
+          touchL = 0,
+          touchT = 0;
+        let touchEvent = (e) => {
+          const event = e || window.event;
+          switch (event.type) {
+            case "touchstart":
+              touchX = event.touches[0].clientX;
+              touchY = event.touches[0].clientY;
+              touchL = event.target.offsetLeft;
+              touchT = event.target.offsetTop;
+              break;
+            case "touchend":
+              console.log(
+                "touch end (" +
+                  event.target.offsetTop +
+                  "," +
+                  event.target.offsetLeft +
+                  ")"
+              );
+              break;
+            case "touchmove":
+              const moveLeft =
+                event.changedTouches[0].clientX - (touchX - touchL);
+              const moveTop =
+                event.changedTouches[0].clientY - (touchY - touchT);
+              changePostion(event.target, moveLeft, moveTop);
+              break;
+          }
+        };
+        element.addEventListener("touchstart", touchEvent, false);
+        element.addEventListener("touchmove", touchEvent, false);
+        element.addEventListener("touchend", touchEvent, false);
+      }
+
+      function changePostion(element, x, y) {
+        const maxLeft = window.screen.availWidth - element.clientWidth;
+        const maxTop = window.screen.availHeight - element.clientWidth;
+        y = y >= 0 && y <= maxTop ? y : y < 0 ? 0 : maxTop;
+        x = x >= 0 && x <= maxLeft ? x : x < 0 ? 0 : maxLeft;
+        element.style.left = x + "px";
+        element.style.top = y + "px";
+      }
+    </script>
+  </body>
+</html>
